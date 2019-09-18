@@ -207,11 +207,11 @@ rect.hclust(iris_dend_2, k = 2)
 
 ```{r}
 # Coloring PCA plot according to clustering
-tree <- cutree(iris_dend_2, k = 3)
-autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = tree)
-
 tree_2 <- cutree(iris_dend_2, k = 2)
 autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = tree_2)
+
+tree <- cutree(iris_dend_2, k = 3)
+autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = tree)
 ```
   
 
