@@ -16,7 +16,6 @@ library(fastICA)
 library(tidyverse)
 library(ggfortify)
 library(cluster)
-library(fpc)
 ```
 
 ```{r include=FALSE}
@@ -29,7 +28,7 @@ head(iris)
 ```{r}
 # Dropped "species" column
 iris_subset <- select(iris, -"Species")
-iris_subset
+head(iris_subset, n = 3)
 ```
 
 **1. Write out the Kmeans algorithm by hand, and run two iterations of it.**
@@ -44,8 +43,7 @@ iris_subset$Cluster <- sample(1:3, nrow(iris), replace = TRUE)
 # First Iteration
 
 # Compute cluster centroid
-
-# There are 4 variables, so the centroid will be a vector of length 4
+# There are 4 variables, so the centroids will be vectors of length 4
 cluster_1 <- filter(iris_subset, Cluster == 1)
 cluster_2 <- filter(iris_subset, Cluster == 2)
 cluster_3 <- filter(iris_subset, Cluster == 3)
@@ -54,27 +52,25 @@ a <- as.vector(apply(cluster_1, 2, mean)[1:4])
 b <- as.vector(apply(cluster_2, 2, mean)[1:4])
 c <- as.vector(apply(cluster_3, 2, mean)[1:4])
 
-
 # Euclidean distance of each point from each centroid
 d <- sqrt(((iris_subset[1]-a[1])^2)+((iris_subset[2]-a[2])^2)+((iris_subset[3]-a[3])^2)+((iris_subset[4]-a[4])^2))
 e <- sqrt(((iris_subset[1]-b[1])^2)+((iris_subset[2]-b[2])^2)+((iris_subset[3]-b[3])^2)+((iris_subset[4]-b[4])^2))
 f <- sqrt(((iris_subset[1]-c[1])^2)+((iris_subset[2]-c[2])^2)+((iris_subset[3]-c[3])^2)+((iris_subset[4]-c[4])^2))
 
 df <- data.frame(d,e,f)
-colnames(df) <- c("dist_a", "dist_b", "dist_c")
+
+# Finds minimum distance
+iris_subset$Min_dist_1 <- apply(df, 1, min)
+
+# Assigns to new cluster
+iris_subset$Cluster_2 <- apply(df, 1, which.min)
 
 # Second Iteration
 
-# Finds minimum distance
-iris_subset$New <- apply(df, 1, min)
-
-# Assigns to new cluster
-iris_subset$Cluster2 <- apply(df, 1, which.min)
-
 # Computer cluster centroid
-cluster_1.1 <- filter(iris_subset, Cluster2 == 1)
-cluster_2.1 <- filter(iris_subset, Cluster2 == 2)
-cluster_3.1 <- filter(iris_subset, Cluster2 == 3)
+cluster_1.1 <- filter(iris_subset, Cluster_2 == 1)
+cluster_2.1 <- filter(iris_subset, Cluster_2 == 2)
+cluster_3.1 <- filter(iris_subset, Cluster_2 == 3)
 
 g <- as.vector(apply(cluster_1.1, 2, mean)[1:4])
 h <- as.vector(apply(cluster_2.1, 2, mean)[1:4])
@@ -87,23 +83,27 @@ l <- sqrt(((iris_subset[1] - i[1])^2)+((iris_subset[2] - i[2])^2)+((iris_subset[
 df1 <- data.frame(j, k, l)
 
 # Finds Minimum Distance
-iris_subset$New1 <- apply(df1, 1, min)
+iris_subset$Min_dist_2 <- apply(df1, 1, min)
 
 # Assigns to new cluster
-iris_subset$Cluster3 <- apply(df1, 1, which.min)
+iris_subset$Cluster_3 <- apply(df1, 1, which.min)
 
-# Plotting first two variables to get an idea of clusters, although would have used principal component analysis if prompted
+# Displays clusters in each iteration
+iris_clusters <- select(iris_subset, -c("Min_dist_1","Min_dist_2"))
+iris_clusters                     
+```
+```{r include=FALSE}
+# Plotting first two variables to get an idea of clusters, although would have used principal component analysis if prompted, will not show output
 
 plot(iris_subset$Sepal.Length, iris_subset$Sepal.Width, col=iris_subset$Cluster, main = "K-Means Clustering with k=3: Initial Cluster Assignment", xlab = "Sepal Length", ylab = "Sepal Width")
-plot(iris_subset$Sepal.Length, iris_subset$Sepal.Width, col=iris_subset$Cluster2, main = "K-Means Clustering with k=3: First Iteration", xlab = "Sepal Length", ylab = "Sepal Width")
-plot(iris_subset$Sepal.Length, iris_subset$Sepal.Width, col=iris_subset$Cluster3, main = "K-Means Clustering with k=3: Second Iteration", xlab = "Sepal Length", ylab = "Sepal Width")
+plot(iris_subset$Sepal.Length, iris_subset$Sepal.Width, col=iris_subset$Cluster_2, main = "K-Means Clustering with k=3: First Iteration", xlab = "Sepal Length", ylab = "Sepal Width")
+plot(iris_subset$Sepal.Length, iris_subset$Sepal.Width, col=iris_subset$Cluster_3, main = "K-Means Clustering with k=3: Second Iteration", xlab = "Sepal Length", ylab = "Sepal Width")
 ```
 
 **2. Run PCA on the Iris dataset. Plot a scatter plot of PC1 vs PC2 and include the percent variance those PCs describe.**
 ```{r}
 # Convert data into matrix 
 iris_pca <- data.matrix(iris[,1:4])
-
 autoplot(prcomp(iris_pca, scale.=TRUE))
 pr_iris <- prcomp(iris_pca, scale.=TRUE)
 pr_iris
@@ -120,7 +120,6 @@ sum(pr_iris$sdev^2)
 per_var <- pr_iris$sdev^2/sum(pr_iris$sdev^2)
 
 # Isolating PC1 and PC2, which cumulatively describe 95.81% of the variance. PC1 describes 72.96% of the variance, and PC2 describes 22.85% of the variance. 
-
 per_var[1:2]
 ```
 
@@ -143,7 +142,6 @@ heatmap(ica_output$A)
 set.seed(4)
 
 # Trying with two clusters
-
 kmeans_iris_2 <- kmeans(iris[,1:4], 2)
 
 a <- silhouette(kmeans_iris_2$cluster, dist(iris[,1:4]))
@@ -151,7 +149,6 @@ a <- silhouette(kmeans_iris_2$cluster, dist(iris[,1:4]))
 plot(a, col=iris$Species)
 
 # Trying with three clusters
-
 kmeans_iris_3 <- kmeans(iris[,1:4], 3)
 
 b <- silhouette(kmeans_iris_3$cluster, dist(iris[,1:4]))
@@ -159,7 +156,6 @@ b <- silhouette(kmeans_iris_3$cluster, dist(iris[,1:4]))
 plot(b, col=iris$Species)
 
 # Trying with four clusters
-
 kmeans_iris_4 <- kmeans(iris[,1:4], 4)
 
 c <- silhouette(kmeans_iris_4$cluster, dist(iris[,1:4]))
@@ -167,22 +163,16 @@ c <- silhouette(kmeans_iris_4$cluster, dist(iris[,1:4]))
 plot(c, col=iris$Species)
 
 # Checking which species are in which cluster
-
 levels(iris$Species)
 palette()
 
 # Per silhouette analysis, two clusters results in the highest average silhouette width. The data cluster somewhat by species, in that one species (setosa) is in the first cluster, and the remaining two species (versicolor and virginica) are in the second cluster; however, the clusters do not each represent a species.
 
-# Confirming that two clusters are optimal per silhouette analysis
-pamk(iris[,1:4])
-
 # Running K means with two clusters
-
 kmeans_iris_2 <- kmeans(iris[,1:4], 2)
 kmeans_iris_2
 
 # PCA plot colored by species
-
 autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = "Species")
 ```
   
@@ -191,34 +181,33 @@ autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = "Species")
   * Try two different linkage types, and two different distance metrics. 
   * For one linkage type and one distance metric, try two different cut points. 
   * Using this clustering, color the PCA plot according to the clusters. (6  plots in total)
-```{r}
+```{r warning=FALSE}
 # First linkage type and distance metric
-
 iris_dist <- dist(iris[,1:4], method = "manhattan")
 iris_dend <- hclust(iris_dist, method = "average")
 plot(iris_dend)
 
 # Second linkage type and distance metric
-
 iris_dist_2 <- dist(iris[,1:4], method = "euclidean")
 iris_dend_2 <- hclust(iris_dist_2, method = "complete")
 plot(iris_dend_2)
-
+```
+```{r}
 # Trying two different cut points
 plot(iris_dend_2)
 rect.hclust(iris_dend_2, k = 3)
 
 plot(iris_dend_2)
 rect.hclust(iris_dend_2, k = 2)
+```
 
+```{r}
 # Coloring PCA plot according to clustering
 tree <- cutree(iris_dend_2, k = 3)
 autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = tree)
 
 tree_2 <- cutree(iris_dend_2, k = 2)
 autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = tree_2)
-
-
 ```
   
 
