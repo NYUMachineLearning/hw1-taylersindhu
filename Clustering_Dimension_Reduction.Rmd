@@ -102,11 +102,15 @@ plot(iris_subset$Sepal.Length, iris_subset$Sepal.Width, col=iris_subset$Cluster_
 
 **2. Run PCA on the Iris dataset. Plot a scatter plot of PC1 vs PC2 and include the percent variance those PCs describe.**
 ```{r}
-# Convert data into matrix 
+# Converting data into matrix 
 iris_pca <- data.matrix(iris[,1:4])
-autoplot(prcomp(iris_pca, scale.=TRUE))
+
+# Running PCA
 pr_iris <- prcomp(iris_pca, scale.=TRUE)
 pr_iris
+
+# Plotting 
+autoplot(prcomp(iris_pca, scale.=TRUE))
 
 # Calculating percent variance explained by each principle component to check plot labels
 
