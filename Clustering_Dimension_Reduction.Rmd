@@ -92,8 +92,8 @@ iris_subset$Cluster_3 <- apply(df1, 1, which.min)
 iris_clusters <- select(iris_subset, -c("Min_dist_1","Min_dist_2"))
 iris_clusters                     
 ```
-```{r include=FALSE}
-# Plotting first two variables to get an idea of clusters, although would have used principal component analysis if prompted, will not show output
+```{r echo=TRUE}
+# Plotting first two variables to get an idea of clusters, although would have used principal component analysis if prompted
 
 plot(iris_subset$Sepal.Length, iris_subset$Sepal.Width, col=iris_subset$Cluster, main = "K-Means Clustering with k=3: Initial Cluster Assignment", xlab = "Sepal Length", ylab = "Sepal Width")
 plot(iris_subset$Sepal.Length, iris_subset$Sepal.Width, col=iris_subset$Cluster_2, main = "K-Means Clustering with k=3: First Iteration", xlab = "Sepal Length", ylab = "Sepal Width")
@@ -170,14 +170,14 @@ plot(c, col=iris$Species)
 levels(iris$Species)
 palette()
 
-# Per silhouette analysis, two clusters results in the highest average silhouette width. The data cluster somewhat by species, in that one species (setosa) is in the first cluster, and the remaining two species (versicolor and virginica) are in the second cluster; however, the clusters do not each represent a species.
+# Per silhouette analysis, two clusters results in the highest average silhouette width. The data cluster somewhat by species, in that one species (setosa) is in the first cluster, and the vast majority of the remaining two species (versicolor and virginica) are in the second cluster; however, the clusters do not each represent a species.
 
 # Running K means with two clusters
 kmeans_iris_2 <- kmeans(iris[,1:4], 2)
 kmeans_iris_2
 
-# PCA plot colored by species
-autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = "Species")
+# PCA plot colored by clusters
+autoplot(prcomp(iris_pca, scale.=TRUE), data = iris, col = kmeans_iris_2$cluster)
 ```
   
 **5. Use hierarchical clustering to cluster the Iris data.**
