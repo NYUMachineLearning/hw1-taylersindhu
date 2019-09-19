@@ -135,7 +135,7 @@ ica_output
 ```
 ```{r}
 # Plotting as heatmap
-heatmap(ica_output$A)
+heatmap(ica_output$S)
 ```
 
 **4. Use Kmeans to cluster the Iris data.**
